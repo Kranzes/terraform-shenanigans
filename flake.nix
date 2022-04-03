@@ -10,7 +10,7 @@
       terraform = (pkgs.terraform.withPlugins (plugins: [ plugins.libvirt ]));
       terraformConfiguration = terranix.lib.terranixConfiguration {
         inherit system;
-        modules = [ ./config.nix ];
+        modules = [ ./libvirt.nix ./providers.nix ];
       };
     in
     {
