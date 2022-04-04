@@ -7,10 +7,13 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-      terraform = (pkgs.terraform.withPlugins (plugins: [ plugins.libvirt ]));
+      terraform = (pkgs.terraform.withPlugins (plugins: [ plugins.docker ]));
       terraformConfiguration = terranix.lib.terranixConfiguration {
         inherit system;
-        modules = [ ./libvirt.nix ./providers.nix ];
+        modules = [
+          ./providers.nix
+          ./docker.nix
+        ];
       };
     in
     {
@@ -20,19 +23,19 @@
         apply = {
           type = "app";
           program = toString (pkgs.writers.writeBash "apply" ''
-            if [[ -e config.tf.json ]]; then rm -f config.tf.json; fi
-            cp ${terraformConfiguration} config.tf.json \
-              && ${terraform}/bin/terraform init \
-              && ${terraform}/bin/terraform apply
+            DIR=$(mktemp -d)
+            ln -s ${terraformConfiguration} $DIR/config.tf.json
+            ${terraform}/bin/terraform -chdir=$DIR init
+            ${terraform}/bin/terraform -chdir=$DIR apply
           '');
         };
         destroy = {
           type = "app";
           program = toString (pkgs.writers.writeBash "destroy" ''
-            if [[ -e config.tf.json ]]; then rm -f config.tf.json; fi
-            cp ${terraformConfiguration} config.tf.json \
-              && ${terraform}/bin/terraform init \
-              && ${terraform}/bin/terraform destroy
+            DIR=$(mktemp -d)
+            ln -s ${terraformConfiguration} $DIR/config.tf.json
+            ${terraform}/bin/terraform -chdir=$DIR init
+            ${terraform}/bin/terraform -chdir=$DIR destroy
           '');
         };
       };
