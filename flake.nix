@@ -22,7 +22,7 @@
       apps.${system} = {
         apply = {
           type = "app";
-          program = toString (pkgs.writers.writeBash "apply" ''
+          program = toString (pkgs.writeShellScript "apply" ''
             DIR=$(mktemp -d)
             ln -s ${terraformConfiguration} $DIR/config.tf.json
             ${terraform}/bin/terraform -chdir=$DIR init
@@ -31,7 +31,7 @@
         };
         destroy = {
           type = "app";
-          program = toString (pkgs.writers.writeBash "destroy" ''
+          program = toString (pkgs.writeShellScript "destroy" ''
             DIR=$(mktemp -d)
             ln -s ${terraformConfiguration} $DIR/config.tf.json
             ${terraform}/bin/terraform -chdir=$DIR init
